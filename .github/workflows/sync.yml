@@ -54,7 +54,7 @@ jobs:
           cp ../../GUIA_ENGENHARIA_LIMPA.md ./GUIA_ENGENHARIA_LIMPA.md || true
           
           # 4. Adiciona os arquivos ao Git
-          git add .cursor/rules .github/copilot-instructions.md CLAUDE.md GUIA_ENGENHARIA_LIMPA.md
+          git add .cursor/rules .github/copilot-instructions.md CLAUDE.md GUIA_ENGENHARIA_LIMPA.md || true
           
           # 5. Verifica se houve alterações e faz commit/push
           if git diff --staged --quiet; then
@@ -63,8 +63,9 @@ jobs:
             git commit -m "chore: sincroniza regras de engenharia e configuracoes de IA"
             git push origin $TARGET_BRANCH
             echo "🔄 Regras atualizadas com sucesso em $TARGET_REPO."
-          cd ../..
           fi
+          
+          cd ../..
           
           # 6. Limpa o diretório temporário
           rm -rf tmp/$TARGET_REPO
