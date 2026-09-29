@@ -1,30 +1,26 @@
 ---
-globs: *.vue, *.ts, *.js
+
+### 2. `frontend.md` (Padrões Gerais de Frontend — Agnóstico)
+
+```markdown
+---
+globs: *.vue, *.tsx, *.jsx, *.ts, *.js
 alwaysApply: false
 ---
 
-# 💻 Frontend Standards (Vue 3 / TypeScript)
+# 💻 General Frontend Standards
 
-## 1. Ecossistema Vue 3 e TypeScript
-- **Composition API:** O padrão absoluto para a construção de componentes é a Composition API, utilizando a tag `<script setup lang="ts">`.
-- **TypeScript Obrigatório:** Utilize TypeScript de forma rigorosa para garantir a segurança de tipos, interfaces claras e um melhor *intellisense*, reduzindo erros em tempo de execução.
+## 1. Tipagem e Segurança de Código
+- **TypeScript Obrigatório:** Utilize tipagem estrita em todo o código-fonte frontend (componentes, serviços, estados e stores) para garantir segurança, contratos claros de dados e melhor *intellisense*.
+- **Contratos Alinhados com o Backend:** As interfaces de dados no frontend devem refletir fielmente a estrutura recebida através do *Envelope Pattern* da API (mapeando `data`, `message`, `code` e `status_code`).
 
-## 2. Reatividade e Performance
-- **Pensar em Performance:** Construa código reativo de forma consciente. Distinga claramente o uso de `ref()` para valores primitivos e `reactive()` para objetos.
-- **Otimização de Dados:** Para grandes volumes de dados que não precisam de reatividade profunda (ex: listas massivas de leitura), considere utilizar `shallowRef` ou `markRaw` para poupar memória e processamento.
-- **Propriedades Computadas:** Utilize `computed()` para derivar estados e lógicas matemáticas, evitando ao máximo recalcular expressões complexas diretamente no HTML.
+## 2. Componentização e Arquitetura de UI
+- **Componentização Granular (Smart/Dumb):** Divida interfaces complexas em componentes pequenos, coesos e reutilizáveis. Separe componentes de apresentação pura (que recebem props e emitem eventos) de componentes inteligentes (que gerem lógica de negócio e chamadas de API).
+- **Templates Limpos (Anti-complexidade no HTML):** Evite árvores profundas e poluídas de condicionais aninhadas (`v-if`, ternários complexos) diretamente no markup. Extraia lógicas condicionais complexas para propriedades computadas (*computed properties*) ou subcomponentes dedicados.
+- **Fluxo de Dados Unidirecional:** O fluxo de dados deve ser estritamente unidirecional: os dados descem via propriedades (`props`) e os eventos sobem via emissões (`emits`), evitando mutações laterais imprevistas.
 
-## 3. Componentização e Templates Limpos
-- **Componentização Inteligente:** Divida interfaces pesadas em componentes menores, granulares e reutilizáveis (Padrão *Smart/Dumb Components*).
-- **Sem HTML Inflado (Anti-v-if Exagerado):** Não polua os templates com árvores gigantes e aninhadas de `v-if` / `v-else-if`. Se a lógica de renderização condicional se tornar complexa:
-    1. Abstraia esse bloco para um subcomponente dedicado.
-    2. Resolva a lógica através de variáveis ou propriedades computadas (`computed`).
-    3. Se a alternância de exibição for muito frequente e custosa para o DOM, prefira utilizar o `v-show`.
+## 3. Gestão de Estado Global
+- Utilize ferramentas de gestão de estado reativo (como Pinia, Redux Toolkit, Zustand ou Context API otimizada) exclusivamente para dados partilhados entre múltiplos ecrãs, fluxos assíncronos globais ou sessões de utilizador. Estados puramente locais devem permanecer encapsulados no próprio componente.
 
-## 4. Gestão de Estado
-- Para estados globais, partilha de dados entre ecrãs e fluxos assíncronos complexos, utilize o **Pinia**.
-- Mantenha o fluxo de dados unidirecional: componentes emitem eventos (`emits`) para informar mudanças e recebem dados através de propriedades (`props`).
-
-## 5. Testes Automatizados (Vitest)
-- **Ferramenta Nativa:** A biblioteca padrão para testes unitários e de componentes no nosso ecossistema frontend é o **Vitest** (integrado nativamente com o Vite).
-- **Foco dos Testes:** Priorize testar a lógica de negócio encapsulada em *composables* e o comportamento dos componentes (ex: se as *props* são renderizadas corretamente e se os cliques disparam os *emits* esperados), evitando testar detalhes rígidos de implementação do framework.
+## 4. Testes Automatizados de Componentes e Lógica
+- **Foco Comportamental:** Priorize testes focados no comportamento do utilizador e na integridade dos fluxos (ex: se as props renderizam corretamente, se os cliques disparam os eventos esperados e se os *composables* / *hooks* calculam os estados com exatidão), evitando testar detalhes rígidos de implementação interna do framework.

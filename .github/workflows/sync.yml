@@ -4,18 +4,20 @@ on:
   workflow_dispatch: # Executado manualmente pelo GitHub Actions
   push:
     branches:
-      - main # (Opcional) Sincroniza automaticamente se alterar algo na main
+      - main # Sincroniza automaticamente se alterar algo na main
     paths:
       - '.cursor/rules/**'
       - 'GUIA_ENGENHARIA_LIMPA.md'
+      - 'CLAUDE.md'
+      - '.github/copilot-instructions.md'
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Substitua pelos nomes reais dos seus repositórios no GitHub
-        target: [landing-page, conecta_huggy, desafio-dev][cite: 30]
+        # Repositórios de destino
+        target: [landing-page, conecta_huggy, desafio-dev]
       fail-fast: false
 
     steps:
@@ -29,34 +31,41 @@ jobs:
 
       - name: Sync to ${{ matrix.target }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}[cite: 30]
-          ORG: dougCmartins       # <-- Atenção: Se o repositório alvo estiver noutra organização, altere aqui!
-          TARGET_REPO: ${{ matrix.target }}[cite: 30]
-          TARGET_BRANCH: main     # Confirme se a branch dos projetos é 'main' ou 'master'[cite: 30]
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ORG: dougCmartins       # Substitua se o repo estiver em outra org/usuário
+          TARGET_REPO: ${{ matrix.target }}
+          TARGET_BRANCH: main     # Branch padrão dos projetos alvo
         run: |
           echo "🚀 Iniciando sync para $ORG/$TARGET_REPO..."
           
           # 1. Faz o clone do repositório de destino para a pasta tmp
-          git clone https://x-access-token:${GH_TOKEN}@github.com/${ORG}/${TARGET_REPO}.git tmp/$TARGET_REPO -b $TARGET_BRANCH --single-branch[cite: 30]
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${ORG}/${TARGET_REPO}.git tmp/$TARGET_REPO -b $TARGET_BRANCH --single-branch
           
-          # 2. Copia as regras e o guia para garantir que o caminho fica perfeitamente alinhado
-          mkdir -p tmp/$TARGET_REPO/.cursor
-          cp -r .cursor/rules tmp/$TARGET_REPO/.cursor/
-          cp GUIA_ENGENHARIA_LIMPA.md tmp/$TARGET_REPO/ || true
+          # 2. Entra na pasta clonada e prepara a estrutura de diretórios
+          cd tmp/$TARGET_REPO || exit 1
           
-          # 3. Entra na pasta clonada e faz o commit/push apenas se houver alterações
-          cd tmp/$TARGET_REPO || exit 1[cite: 30]
+          mkdir -p .cursor/rules
+          mkdir -p .github
           
-          git add .cursor/rules GUIA_ENGENHARIA_LIMPA.md
+          # 3. Copia todas as regras, guias e instruções de IA para o destino
+          cp -r ../../.cursor/rules/* .cursor/rules/
+          cp ../../CLAUDE.md ./CLAUDE.md
+          cp ../../.github/copilot-instructions.md .github/copilot-instructions.md
+          cp ../../GUIA_ENGENHARIA_LIMPA.md ./GUIA_ENGENHARIA_LIMPA.md || true
           
+          # 4. Adiciona os arquivos ao Git
+          git add .cursor/rules .github/copilot-instructions.md CLAUDE.md GUIA_ENGENHARIA_LIMPA.md
+          
+          # 5. Verifica se houve alterações e faz commit/push
           if git diff --staged --quiet; then
             echo "✅ Nenhuma alteração necessária. O repositório já está atualizado."
           else
-            git commit -m "chore: sincroniza regras de engenharia (cursor rules)"
+            git commit -m "chore: sincroniza regras de engenharia e configuracoes de IA"
             git push origin $TARGET_BRANCH
             echo "🔄 Regras atualizadas com sucesso em $TARGET_REPO."
+          cd ../..
           fi
           
-          # 4. Limpa o diretório temporário[cite: 30]
-          cd ../..[cite: 30]
-          rm -rf tmp/$TARGET_REPO[cite: 30]
+          # 6. Limpa o diretório temporário
+          rm -rf tmp/$TARGET_REPO
+          echo "✅ Finalizado com sucesso para $ORG/$TARGET_REPO."
