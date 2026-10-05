@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         # Repositórios de destino
-        target: [landing-page, conecta_huggy, desafio-dev]
+        target: [landing-page, conecta_huggy, desafio-dev, barber-saas]
       fail-fast: false
 
     steps:
